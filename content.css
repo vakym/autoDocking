@@ -1,0 +1,22 @@
+.console
+{
+    position: fixed;
+    background-color: rgba(220, 64, 239, 0.6);
+    z-index: 99;
+    right: 1%;
+    top: 1%;
+    width: 300px;
+    height: 500px;
+}
+
+.consoleHeader
+{
+    text-align: center;
+    color: white;
+}
+.consoleList
+{
+    list-style: none;
+    padding: 0;
+    margin-left: 10px;
+}
