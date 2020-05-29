@@ -5,6 +5,12 @@ var pitchState = 0.0;
 var pitchSpeed = 0.0;
 var yawState = 0.0;
 var yawSpeed = 0.0;
+var xState = 0.0;
+var xSpeed = 0.0;
+var yState = 0.0;
+var ySpeed = 0.0;
+var zSpeed = 0.0;
+var zState = 0.0;
 var timerId = setInterval(() => 
 {
     if(consoleHidden && !$("#translation-controls").hasClass("hidden"))
@@ -22,13 +28,6 @@ var timerId = setInterval(() =>
         startDocking();
     }
 }, 5000);
-
-function readyToDock()
-{
-    var controlsHidden = $("#translation-controls").hasClass("hidden");
-    var rateSpeed = $("#rate").children(".rate").text();
-    return rateSpeed === "-0.000 m/s" && !controlsHidden;
-}
 
 function showConsole()
 {
@@ -86,6 +85,7 @@ function yaw(force)
 
 function Zmove(force)
 {
+    zSpeed += force; 
     if (force < 0)
         elementClick('#translate-down-button', Math.abs(force));
     if (force > 0)
@@ -94,6 +94,7 @@ function Zmove(force)
 
 function Ymove(force)
 {
+    ySpeed += force;
     if (force < 0)
         elementClick('#translate-left-button', Math.abs(force));
     if (force > 0)
@@ -102,6 +103,7 @@ function Ymove(force)
 
 function Xmove(force)
 {
+    xSpeed += force;
     if (force < 0)
         elementClick('#translate-backward-button', Math.abs(force));
     if (force > 0)
@@ -113,12 +115,26 @@ async function startDocking()
     appendMessage("First stabilization of yaw, pitch, roll",2);
     await FirstRPYStab();
     appendMessage("Stabilized",2);
-
+    appendMessage("First stabilization of Y,Z axis",2);
+    await FirstTranslateMove();
+    appendMessage("Stabilized",2);
 }
 
 async function FirstTranslateMove()
 {
-
+    var promise = new Promise((resolve, reject) => {
+        var id = setInterval(()=>{
+        updateShipStatus();
+        stabilizateRPY();
+        stabilizateTranslate();
+        if(RPYStabilizated() && translateStabilizated())
+        {
+            clearInterval(id);
+            resolve(true);
+        }
+    },100);
+    });
+    return await promise;
 }
 
 
@@ -145,7 +161,11 @@ function RPYStabilizated()
            pitchState === 0 && pitchSpeed === 0; 
 
 }
-
+function translateStabilizated()
+{
+    return zState === 0 && zSpeed === 0 &&
+           yState === 0 && ySpeed ===0;
+}
 
 function stabilizateRPY()
 {
@@ -153,6 +173,28 @@ function stabilizateRPY()
         pitch(getSteps(pitchState,pitchSpeed));
         yaw(getSteps(yawState,yawSpeed));
 }
+
+function stabilizateTranslate()
+{
+    Zmove(getTransSteps(zState,zSpeed));
+    Ymove(getTransSteps(yState,ySpeed));
+}
+
+function getTransSteps(currentPosition,currentSpeed)
+{
+    if(currentPosition !== 0 && currentSpeed === 0)
+        return ((currentPosition/0.1)/4)*-1;
+    
+    if((currentPosition > 0 && currentSpeed < 0) ||
+       (currentPosition < 0 && currentSpeed > 0))
+        if(currentPosition < 1.0)
+            return (currentSpeed*-1)-1;
+        else
+            return 0;  
+    if(currentPosition === 0 && currentSpeed !==0)
+        return currentSpeed*-1;
+}
+
 
 function getSteps(currentPosition,currentSpeed)
 {
@@ -202,6 +244,24 @@ function updateCurrentYawSpeed()
 {
     yawSpeed = parseFloat($("#yaw").children(".rate").text().slice(0,-1));
 }
+
+function updateCurrentX()
+{
+   xState  = parseFloat($("#x-range").children(".distance").text().slice(0,-1));
+}
+
+function updateCurrentY()
+{
+    yState = parseFloat($("#y-range").children(".distance").text().slice(0,-1));
+}
+
+function updateCurrentZ()
+{
+    zState = parseFloat($("#z-range").children(".distance").text().slice(0,-1));
+}
+
+
+
 function updateShipStatus()
 {
     updateCurrentPitch();
@@ -210,4 +270,7 @@ function updateShipStatus()
     updateCurrentRollSpeed();
     updateCurrentYaw();
     updateCurrentYawSpeed();
+    updateCurrentY();
+    updateCurrentZ();
+    updateCurrentX();
 }
