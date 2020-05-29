@@ -29,89 +29,6 @@ var timerId = setInterval(() =>
     }
 }, 5000);
 
-function showConsole()
-{
-    $('body').append(
-    `<div id="console" class="console">
-        <div id="header" class="consoleHeader">
-            <p>Welcome to autoDock system</p>
-        </div>
-        <hr>
-        <div>
-            <ul id='consoleMessages' class="consoleList">
-            </ul>
-        </div>
-    </div>`);
-}
-
-function appendMessage(message,type)
-{
-    messageString = '';
-    switch(type) {
-        case 1:  
-          messageString += `<span style="color: yellow;">[WARNING]</span>`;
-          break;
-      
-        case 2:  
-            messageString += `<span style="color:greenyellow">[INFO]</span>`;
-            break;
-      }
-    $('#consoleMessages').append(`<li style="color: white;">${messageString} ${message}</li>`);
-}
-
-function roll(force)
-{
-    if (force < 0)
-        elementClick('#roll-left-button',Math.abs(force));
-    if (force > 0)
-        elementClick('#roll-right-button',Math.abs(force));
-}
-
-function pitch(force)
-{
-    if (force < 0)
-        elementClick('#pitch-up-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#pitch-down-button', Math.abs(force));
-}
-
-function yaw(force)
-{
-    if (force < 0)
-        elementClick('#yaw-left-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#yaw-right-button', Math.abs(force));
-}
-
-function Zmove(force)
-{
-    if(isNaN(force))
-        return;
-    zSpeed += force; 
-    if (force < 0)
-        elementClick('#translate-down-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-up-button', Math.abs(force));
-}
-
-function Ymove(force)
-{
-    ySpeed += force;
-    if (force < 0)
-        elementClick('#translate-left-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-right-button', Math.abs(force));
-}
-
-function Xmove(force)
-{
-    xSpeed += force;
-    if (force < 0)
-        elementClick('#translate-forward-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-backward-button', Math.abs(force));
-}
-
 async function startDocking()
 {
     appendMessage("First stabilization of yaw, pitch, roll",2);
@@ -122,6 +39,7 @@ async function startDocking()
     appendMessage("Stabilized",2);
     appendMessage("Final approach",2);
     await TranslateMove(0,0,0,0.1);
+    appendMessage("All done!",2);
 }
 
 async function TranslateMove(x,y,z, maxSpeed)
@@ -218,12 +136,20 @@ function getSteps(currentPosition,currentSpeed)
         return (currentSpeed/0.1)*-1;
 }
 
-function elementClick(elemnetName,count)
+
+
+/* the position of the ship functions */
+function updateShipStatus()
 {
-    for (var i = 0; i < count; i++)
-    {
-        $(elemnetName).click();
-    }
+    updateCurrentPitch();
+    updateCurrentPitchSpeed();
+    updateCurrentRoll();
+    updateCurrentRollSpeed();
+    updateCurrentYaw();
+    updateCurrentYawSpeed();
+    updateCurrentY();
+    updateCurrentZ();
+    updateCurrentX();
 }
 
 function updateCurrentRoll()
@@ -270,18 +196,98 @@ function updateCurrentZ()
 {
     zState = parseFloat($("#z-range").children(".distance").text().slice(0,-1));
 }
+/* end the position of the ship functions */
 
-
-
-function updateShipStatus()
+/* Controls functions */
+function roll(force)
 {
-    updateCurrentPitch();
-    updateCurrentPitchSpeed();
-    updateCurrentRoll();
-    updateCurrentRollSpeed();
-    updateCurrentYaw();
-    updateCurrentYawSpeed();
-    updateCurrentY();
-    updateCurrentZ();
-    updateCurrentX();
+    if (force < 0)
+        elementClick('#roll-left-button',Math.abs(force));
+    if (force > 0)
+        elementClick('#roll-right-button',Math.abs(force));
 }
+
+function pitch(force)
+{
+    if (force < 0)
+        elementClick('#pitch-up-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#pitch-down-button', Math.abs(force));
+}
+
+function yaw(force)
+{
+    if (force < 0)
+        elementClick('#yaw-left-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#yaw-right-button', Math.abs(force));
+}
+
+function Zmove(force)
+{
+    if(isNaN(force))
+        return;
+    zSpeed += force; 
+    if (force < 0)
+        elementClick('#translate-down-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-up-button', Math.abs(force));
+}
+
+function Ymove(force)
+{
+    ySpeed += force;
+    if (force < 0)
+        elementClick('#translate-left-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-right-button', Math.abs(force));
+}
+
+function Xmove(force)
+{
+    xSpeed += force;
+    if (force < 0)
+        elementClick('#translate-forward-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-backward-button', Math.abs(force));
+}
+
+function elementClick(elemnetName,count)
+{
+    for (var i = 0; i < count; i++)
+    {
+        $(elemnetName).click();
+    }
+}
+/*  end controls functions*/
+/* UI functions */
+function showConsole()
+{
+    $('body').append(
+    `<div id="console" class="console">
+        <div id="header" class="consoleHeader">
+            <p>Welcome to autoDock system</p>
+        </div>
+        <hr>
+        <div>
+            <ul id='consoleMessages' class="consoleList">
+            </ul>
+        </div>
+    </div>`);
+}
+
+function appendMessage(message,type)
+{
+    messageString = '';
+    switch(type) {
+        case 1:  
+          messageString += `<span style="color: yellow;">[WARNING]</span>`;
+          break;
+      
+        case 2:  
+            messageString += `<span style="color:greenyellow">[INFO]</span>`;
+            break;
+      }
+    $('#consoleMessages').append(`<li style="color: white;">${messageString} ${message}</li>`);
+}
+/* end UI functions */
