@@ -84,27 +84,43 @@ function yaw(force)
         elementClick('#yaw-right-button', Math.abs(force));
 }
 
-function startDocking()
+async function startDocking()
 {
     appendMessage("First stabilization of yaw, pitch, roll",2);
-    stabilizateRPY();
+    await FirstRPYStab();
     appendMessage("Stabilized",2);
 }
 
+async function FirstRPYStab()
+{
+    var promise = new Promise((resolve, reject) => {
+        var id = setInterval(()=>{
+        updateShipStatus();
+        stabilizateRPY();
+        if(RPYStabilizated())
+        {
+            clearInterval(id);
+            resolve(true);
+        }
+    },100);
+    });
+    return await promise;
+}
+
+function RPYStabilizated()
+{
+    return rollState === 0 && rollSpeed === 0 &&
+           yawState === 0 && yawSpeed === 0 &&
+           pitchState === 0 && pitchSpeed === 0; 
+
+}
+
+
 function stabilizateRPY()
 {
-    var timerRPY = setInterval(() => 
-    {
-        updateCurrentRoll();
-        updateCurrentRollSpeed();
-        updateCurrentPitch();
-        updateCurrentPitchSpeed();
-        updateCurrentYaw();
-        updateCurrentYawSpeed();
         roll(getSteps(rollState,rollSpeed));
         pitch(getSteps(pitchState,pitchSpeed));
         yaw(getSteps(yawState,yawSpeed));
-    },100);
 }
 
 function getSteps(currentPosition,currentSpeed)
@@ -156,4 +172,12 @@ function updateCurrentYawSpeed()
 {
     yawSpeed = parseFloat($("#yaw").children(".rate").text().slice(0,-1));
 }
-
+function updateShipStatus()
+{
+    updateCurrentPitch();
+    updateCurrentPitchSpeed();
+    updateCurrentRoll();
+    updateCurrentRollSpeed();
+    updateCurrentYaw();
+    updateCurrentYawSpeed();
+}
