@@ -84,12 +84,43 @@ function yaw(force)
         elementClick('#yaw-right-button', Math.abs(force));
 }
 
+function Zmove(force)
+{
+    if (force < 0)
+        elementClick('#translate-down-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-up-button', Math.abs(force));
+}
+
+function Ymove(force)
+{
+    if (force < 0)
+        elementClick('#translate-left-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-right-button', Math.abs(force));
+}
+
+function Xmove(force)
+{
+    if (force < 0)
+        elementClick('#translate-backward-button', Math.abs(force));
+    if (force > 0)
+        elementClick('#translate-forward-button', Math.abs(force));
+}
+
 async function startDocking()
 {
     appendMessage("First stabilization of yaw, pitch, roll",2);
     await FirstRPYStab();
     appendMessage("Stabilized",2);
+
 }
+
+async function FirstTranslateMove()
+{
+
+}
+
 
 async function FirstRPYStab()
 {
@@ -141,7 +172,6 @@ function elementClick(elemnetName,count)
         $(elemnetName).click();
     }
 }
-
 
 function updateCurrentRoll()
 {
