@@ -1,8 +1,10 @@
 {
-    "name": "Dock",
+    "name": "Crew Dragon Auto-Docker",
     "version": "1.0",
-    "description": "Build an Extension!",
+    "description": "Automatic docking in the game at https://iss-sim.spacex.com/",
     "manifest_version": 2,
+    "icons": { 
+     "128": "icon.png" },
     "content_scripts": [
         {
           "matches": [

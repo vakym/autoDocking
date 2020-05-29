@@ -1,3 +1,8 @@
+/*
+-----About his code-----
+This my first chrome extension. And one of my first JS application. So, the code below have smells.
+email: avakym92@gmail.com
+*/
 var consoleHidden = true;
 var rollState = 0.0;
 var rollSpeed = 0.0;
