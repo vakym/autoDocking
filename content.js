@@ -4,18 +4,145 @@ This my first chrome extension. And one of my first JS application. So, the code
 email: avakym92@gmail.com
 */
 var consoleHidden = true;
-var rollState = 0.0;
-var rollSpeed = 0.0;
-var pitchState = 0.0;
-var pitchSpeed = 0.0;
-var yawState = 0.0;
-var yawSpeed = 0.0;
-var xState = 0.0;
-var xSpeed = 0.0;
-var yState = 0.0;
-var ySpeed = 0.0;
-var zSpeed = 0.0;
-var zState = 0.0;
+class Ship
+{
+    rollState = 0.0;
+    rollSpeed = 0.0;
+    pitchState = 0.0;
+    pitchSpeed = 0.0;
+    yawState = 0.0;
+    yawSpeed = 0.0;
+    xState = 0.0;
+    xSpeed = 0.0;
+    yState = 0.0;
+    ySpeed = 0.0;
+    zSpeed = 0.0;
+    zState = 0.0;
+
+    constructor() {
+    }
+
+    #updateCurrentRoll = function()
+    {
+        this.rollState = parseFloat($("#roll").children(".error").text().slice(0,-1));
+    }
+
+    #updateCurrentRollSpeed = function()
+    {
+        this.rollSpeed = parseFloat($("#roll").children(".rate").text().slice(0,-1));
+    }
+
+    #updateCurrentPitch = function()
+    {
+        this.pitchState = parseFloat($("#pitch").children(".error").text().slice(0,-1));
+    }
+
+    #updateCurrentPitchSpeed = function()
+    {
+        this.pitchSpeed = parseFloat($("#pitch").children(".rate").text().slice(0,-1));
+    }
+
+    #updateCurrentYaw = function()
+    {
+        this.yawState = parseFloat($("#yaw").children(".error").text().slice(0,-1));
+    }
+
+    #updateCurrentYawSpeed = function()
+    {
+        this.yawSpeed = parseFloat($("#yaw").children(".rate").text().slice(0,-1));
+    }
+
+    #updateCurrentX = function()
+    {
+        this.xState  = parseFloat($("#x-range").children(".distance").text().slice(0,-1));
+    }
+
+    #updateCurrentY = function()
+    {
+        this.yState = parseFloat($("#y-range").children(".distance").text().slice(0,-1));
+    }
+
+    #updateCurrentZ = function()
+    {
+        this.zState = parseFloat($("#z-range").children(".distance").text().slice(0,-1));
+    }
+
+    updateShipStatus()
+    {
+        this.#updateCurrentPitch();
+        this.#updateCurrentPitchSpeed();
+        this.#updateCurrentRoll();
+        this.#updateCurrentRollSpeed();
+        this.#updateCurrentYaw();
+        this.#updateCurrentYawSpeed();
+        this.#updateCurrentY();
+        this.#updateCurrentZ();
+        this.#updateCurrentX();
+    }
+
+    /* Controls functions */
+    roll(force)
+    {
+        if (force < 0)
+            this.#elementClick('#roll-left-button',Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#roll-right-button',Math.abs(force));
+    }
+
+    pitch(force)
+    {
+        if (force < 0)
+            this.#elementClick('#pitch-up-button', Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#pitch-down-button', Math.abs(force));
+    }
+
+    yaw(force)
+    {
+        if (force < 0)
+            this.#elementClick('#yaw-left-button', Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#yaw-right-button', Math.abs(force));
+    }
+
+    Zmove(force)
+    {
+        this.zSpeed += force; 
+        if (force < 0)
+            this.#elementClick('#translate-down-button', Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#translate-up-button', Math.abs(force));
+    }
+
+    Ymove(force)
+    {
+        this.ySpeed += force;
+        if (force < 0)
+            this.#elementClick('#translate-left-button', Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#translate-right-button', Math.abs(force));
+    }
+
+    Xmove(force)
+    {
+        this.xSpeed += force;
+        if (force < 0)
+            this.#elementClick('#translate-forward-button', Math.abs(force));
+        if (force > 0)
+            this.#elementClick('#translate-backward-button', Math.abs(force));
+    }
+
+    #elementClick = function(elemnetName,count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            $(elemnetName).click();
+        }
+    }
+    /*  end controls functions*/
+}
+
+var ship  = new Ship();
 var timerId = setInterval(() => 
 {
     if(consoleHidden && !$("#translation-controls").hasClass("hidden"))
@@ -23,7 +150,7 @@ var timerId = setInterval(() =>
         showConsole();
         consoleHidden = false;
         appendMessage("This system was designed for Soyuz spaceship. This never tested on Crew Dragon. Use it you own risk.",1);
-        appendMessage("Ship isn't ready for automatic doking. Await.",2);
+        appendMessage("Ship isn't ready for automatic docking. Wait.",2);
     }
     var rateSpeed = $("#rate").children(".rate").text();
     if(!consoleHidden && (rateSpeed === "-0.000 m/s" || rateSpeed === "-0.001 m/s"))
@@ -43,7 +170,7 @@ async function startDocking()
     await TranslateMove(5,0,0,0);
     appendMessage("Stabilized",2);
     appendMessage("Final approach",2);
-    await TranslateMove(0,0,0,0.1);
+    await TranslateMove(0,0,0,0);
     appendMessage("All done!",2);
 }
 
@@ -51,7 +178,7 @@ async function TranslateMove(x,y,z, maxSpeed)
 {
     var promise = new Promise((resolve, reject) => {
         var id = setInterval(()=>{
-        updateShipStatus();
+        ship.updateShipStatus();
         stabilizateRPY();
         stabilizateTranslate(x,y,z,maxSpeed);
         if(RPYStabilizated() && translateStabilizated(x,y,z))
@@ -64,12 +191,11 @@ async function TranslateMove(x,y,z, maxSpeed)
     return await promise;
 }
 
-
 async function FirstRPYStab()
 {
     var promise = new Promise((resolve, reject) => {
         var id = setInterval(()=>{
-        updateShipStatus();
+            ship.updateShipStatus();
         stabilizateRPY();
         if(RPYStabilizated())
         {
@@ -83,30 +209,31 @@ async function FirstRPYStab()
 
 function RPYStabilizated()
 {
-    return rollState === 0 && rollSpeed === 0 &&
-           yawState === 0 && yawSpeed === 0 &&
-           pitchState === 0 && pitchSpeed === 0; 
+    return  ship.rollState === 0 && ship.rollSpeed === 0 &&
+            ship.yawState === 0 && ship.yawSpeed === 0 &&
+            ship.pitchState === 0 && ship.pitchSpeed === 0; 
 
 }
+
 function translateStabilizated(x,y,z)
 {
-    return zState === z && zSpeed === 0 &&
-           yState === y && ySpeed === 0 &&
-           xState === x && xSpeed === 0;
+    return  ship.zState === z && ship.zSpeed === 0 &&
+            ship.yState === y && ship.ySpeed === 0 &&
+            ship.xState === x && ship.xSpeed === 0;
 }
 
 function stabilizateRPY()
 {
-        roll(getSteps(rollState,rollSpeed));
-        pitch(getSteps(pitchState,pitchSpeed));
-        yaw(getSteps(yawState,yawSpeed));
+        ship.roll(getSteps(ship.rollState,ship.rollSpeed));
+        ship.pitch(getSteps(ship.pitchState,ship.pitchSpeed));
+        ship.yaw(getSteps(ship.yawState,ship.yawSpeed));
 }
 
 function stabilizateTranslate(x,y,z,maxSpeed)
 {
-    Zmove(getTransSteps(zState - z, zSpeed,maxSpeed));
-    Ymove(getTransSteps(yState - y, ySpeed,maxSpeed));
-    Xmove(getTransSteps(xState - x, xSpeed,maxSpeed));
+    ship.Zmove(getTransSteps(ship.zState - z, ship.zSpeed,maxSpeed));
+    ship.Ymove(getTransSteps(ship.yState - y, ship.ySpeed,maxSpeed));
+    ship.Xmove(getTransSteps(ship.xState - x, ship.xSpeed,maxSpeed));
 }
 
 function getTransSteps(currentPosition,currentSpeed,maxSpeed)
@@ -129,7 +256,6 @@ function getTransSteps(currentPosition,currentSpeed,maxSpeed)
          return (currentSpeed*-1) + ((currentPosition/0.1)/4)*-1
 }
 
-
 function getSteps(currentPosition,currentSpeed)
 {
     if(currentPosition !== 0 && currentSpeed === 0)
@@ -141,130 +267,6 @@ function getSteps(currentPosition,currentSpeed)
         return (currentSpeed/0.1)*-1;
 }
 
-
-
-/* the position of the ship functions */
-function updateShipStatus()
-{
-    updateCurrentPitch();
-    updateCurrentPitchSpeed();
-    updateCurrentRoll();
-    updateCurrentRollSpeed();
-    updateCurrentYaw();
-    updateCurrentYawSpeed();
-    updateCurrentY();
-    updateCurrentZ();
-    updateCurrentX();
-}
-
-function updateCurrentRoll()
-{
-    rollState = parseFloat($("#roll").children(".error").text().slice(0,-1));
-}
-
-function updateCurrentRollSpeed()
-{
-    rollSpeed = parseFloat($("#roll").children(".rate").text().slice(0,-1));
-}
-
-function updateCurrentPitch()
-{
-    pitchState = parseFloat($("#pitch").children(".error").text().slice(0,-1));
-}
-
-function updateCurrentPitchSpeed()
-{
-    pitchSpeed = parseFloat($("#pitch").children(".rate").text().slice(0,-1));
-}
-
-function updateCurrentYaw()
-{
-    yawState = parseFloat($("#yaw").children(".error").text().slice(0,-1));
-}
-
-function updateCurrentYawSpeed()
-{
-    yawSpeed = parseFloat($("#yaw").children(".rate").text().slice(0,-1));
-}
-
-function updateCurrentX()
-{
-   xState  = parseFloat($("#x-range").children(".distance").text().slice(0,-1));
-}
-
-function updateCurrentY()
-{
-    yState = parseFloat($("#y-range").children(".distance").text().slice(0,-1));
-}
-
-function updateCurrentZ()
-{
-    zState = parseFloat($("#z-range").children(".distance").text().slice(0,-1));
-}
-/* end the position of the ship functions */
-
-/* Controls functions */
-function roll(force)
-{
-    if (force < 0)
-        elementClick('#roll-left-button',Math.abs(force));
-    if (force > 0)
-        elementClick('#roll-right-button',Math.abs(force));
-}
-
-function pitch(force)
-{
-    if (force < 0)
-        elementClick('#pitch-up-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#pitch-down-button', Math.abs(force));
-}
-
-function yaw(force)
-{
-    if (force < 0)
-        elementClick('#yaw-left-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#yaw-right-button', Math.abs(force));
-}
-
-function Zmove(force)
-{
-    if(isNaN(force))
-        return;
-    zSpeed += force; 
-    if (force < 0)
-        elementClick('#translate-down-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-up-button', Math.abs(force));
-}
-
-function Ymove(force)
-{
-    ySpeed += force;
-    if (force < 0)
-        elementClick('#translate-left-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-right-button', Math.abs(force));
-}
-
-function Xmove(force)
-{
-    xSpeed += force;
-    if (force < 0)
-        elementClick('#translate-forward-button', Math.abs(force));
-    if (force > 0)
-        elementClick('#translate-backward-button', Math.abs(force));
-}
-
-function elementClick(elemnetName,count)
-{
-    for (var i = 0; i < count; i++)
-    {
-        $(elemnetName).click();
-    }
-}
-/*  end controls functions*/
 /* UI functions */
 function showConsole()
 {
