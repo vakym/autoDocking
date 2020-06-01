@@ -170,7 +170,7 @@ async function startDocking()
     await TranslateMove(5,0,0,0);
     appendMessage("Stabilized",2);
     appendMessage("Final approach",2);
-    await TranslateMove(0,0,0,0);
+    await TranslateMove(0.2,0,0,0);
     appendMessage("All done!",2);
 }
 
@@ -224,12 +224,12 @@ function translateStabilizated(x,y,z)
 
 function stabilizateRPY()
 {
-        ship.roll(getSteps(ship.rollState,ship.rollSpeed));
-        ship.pitch(getSteps(ship.pitchState,ship.pitchSpeed));
-        ship.yaw(getSteps(ship.yawState,ship.yawSpeed));
+        ship.roll(getSteps(ship.rollState, ship.rollSpeed));
+        ship.pitch(getSteps(ship.pitchState, ship.pitchSpeed));
+        ship.yaw(getSteps(ship.yawState, ship.yawSpeed));
 }
 
-function stabilizateTranslate(x,y,z,maxSpeed)
+function stabilizateTranslate(x, y, z, maxSpeed)
 {
     ship.Zmove(getTransSteps(ship.zState - z, ship.zSpeed,maxSpeed));
     ship.Ymove(getTransSteps(ship.yState - y, ship.ySpeed,maxSpeed));
